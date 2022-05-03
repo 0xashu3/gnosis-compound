@@ -6,6 +6,7 @@ import Safe from "@gnosis.pm/safe-core-sdk";
 import EthersAdapter from "@gnosis.pm/safe-ethers-lib";
 import { abi } from "./abi/compound";
 import { parseEther } from "ethers/lib/utils";
+import CErc20ABI from "./abi/CErc20ABI";
 
 export default function Home() {
   const [walletConnected, setWalletConnected] = useState(false);
@@ -54,6 +55,40 @@ export default function Home() {
         value: "10000000000000000",
         data: iface.encodeFunctionData("mint"),
       };
+      console.log(txs);
+      const params = {
+        safeTxGas: 500000,
+      };
+      const safeTransaction = await safesdk.createTransaction(txs);
+      const owner1Signature = await safesdk.signTransaction(safeTransaction);
+      await safeTransaction.transactionResponse?.wait();
+      setSafetxn(safeTransaction);
+      console.log(safeTransaction);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const mintcdai = async () => {
+    try {
+      const safesdk = await safeWallet();
+      let iface = new ethers.utils.Interface(CErc20ABI);
+
+      const txs = [
+        {
+          to: "0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa",
+          value: 0,
+          data: iface.encodeFunctionData("approve", [
+            "0x6D7F0754FFeb405d23C51CE938289d4835bE3b14",
+            "27000000000000000000",
+          ]),
+        },
+        {
+          to: "0x6D7F0754FFeb405d23C51CE938289d4835bE3b14",
+          value: 0,
+          data: iface.encodeFunctionData("mint", ["27000000000000000000"]),
+        },
+      ];
       console.log(txs);
       const params = {
         safeTxGas: 500000,
@@ -126,6 +161,7 @@ export default function Home() {
       </main>
       <div>
         <button onClick={createSafeTxn}>Create Transaction</button>
+        <button onClick={mintcdai}>Mint Dai</button>
         <button onClick={signSafeTxn}>Sign Transaction</button>
         <button onClick={executeTxn}>Execute Transaction</button>
       </div>
